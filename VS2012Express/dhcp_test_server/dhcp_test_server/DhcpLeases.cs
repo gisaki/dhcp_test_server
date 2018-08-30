@@ -93,7 +93,7 @@ namespace dhcp_test_server
         {
             foreach (DhcpLeaseItem item in this.items_)
             {
-                if (item.chaddr_.Equals(chaddr))
+                if (item.Matches(chaddr))
                 {
                     return item;
                 }
@@ -107,8 +107,31 @@ namespace dhcp_test_server
 
     public class DhcpLeaseItem
     {
+        // ユーザが直接編集するのは大変なので、wrapする
+        private PhysicalAddress chaddr_ { get; set; }
+        private const char MAC_SEPARATOR = '-';
+        public string chaddr_str_
+        {
+            get
+            {
+                return BitConverter.ToString(this.chaddr_.GetAddressBytes()).Replace('-', MAC_SEPARATOR);
+            }
+            set
+            {
+                // 値が変更されてたらchaddr_に変更をかける
+                try
+                {
+                    PhysicalAddress pa = PhysicalAddress.Parse(value.ToUpper());
+                    this.chaddr_ = pa;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+
         // 以下全て、試験用に任意にユーザが編集可能とするために private set; ではなく public set; としている
-        public PhysicalAddress chaddr_ { get; set; }
         public IPAddress yiaddr_ { get; set; }
         public UInt32 lease_time_ { get; set; }
         public UInt32 renewal_time_ { get; set; }
@@ -122,7 +145,7 @@ namespace dhcp_test_server
         public DhcpLeaseItem()
         {
             // 仮
-            this.chaddr_ = new PhysicalAddress(new byte[] { 1, 2, 3, 4, 5, 6 });
+            this.chaddr_ = new PhysicalAddress(new byte[] { 0x00, 0x00, 0x5E, 0x00, 0x53, 0x01 });
             this.yiaddr_ = IPAddress.Parse("192.168.0.123");
             this.lease_time_ = 3600;
 
@@ -140,6 +163,12 @@ namespace dhcp_test_server
             : this()
         {
             this.chaddr_ = chaddr;
+        }
+
+        // 該当するレコード？
+        public bool Matches(PhysicalAddress chaddr)
+        {
+            return (this.chaddr_.Equals(chaddr));
         }
     }
 }

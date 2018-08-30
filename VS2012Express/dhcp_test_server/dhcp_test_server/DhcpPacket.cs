@@ -142,7 +142,7 @@ namespace dhcp_test_server
             this.yiaddr_ = new IPAddress(rcvBytes.Skip(16).Take(4).ToArray());
             this.siaddr_ = new IPAddress(rcvBytes.Skip(20).Take(4).ToArray());
             this.giaddr_ = new IPAddress(rcvBytes.Skip(24).Take(4).ToArray());
-            this.chaddr_ = new PhysicalAddress(rcvBytes.Skip(28).Take(16).ToArray());
+            this.chaddr_ = new PhysicalAddress(rcvBytes.Skip(28).Take(this.hlen_).ToArray()); // this.hlen_に長さが指定されるので、その分を有効値として切り出して変換する
 
             // 受信パケットからoptionsに変換する
             {

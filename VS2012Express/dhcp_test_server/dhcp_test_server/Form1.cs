@@ -227,6 +227,10 @@ namespace dhcp_test_server
                 (rcv_packet.message_type_ == DhcpPacket.MessageType.DHCPDISCOVER)? DhcpPacket.MessageType.DHCPOFFER:
                 (rcv_packet.message_type_ == DhcpPacket.MessageType.DHCPREQUEST)? DhcpPacket.MessageType.DHCPACK: 
                 DhcpPacket.MessageType.unknown;
+            if (snd_message_type == DhcpPacket.MessageType.unknown)
+            {
+                return;
+            }
             DhcpPacket snd_packet = new DhcpPacket(rcv_packet, snd_message_type, this.dhcplease_);
             byte[] msg = snd_packet.GetPacketBytes();
 
