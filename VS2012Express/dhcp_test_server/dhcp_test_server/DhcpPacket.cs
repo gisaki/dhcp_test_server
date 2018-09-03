@@ -42,7 +42,7 @@ namespace dhcp_test_server
         protected IPAddress yiaddr_ { get; private set; }
         protected IPAddress siaddr_ { get; private set; }
         protected IPAddress giaddr_ { get; private set; }
-        protected PhysicalAddress chaddr_ { get; private set; }
+        public PhysicalAddress chaddr_ { get; private set; }
         protected DhcpOptions options_ { get; private set; }
 
         // その他情報

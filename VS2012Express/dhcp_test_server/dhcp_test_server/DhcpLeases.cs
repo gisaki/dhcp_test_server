@@ -88,8 +88,40 @@ namespace dhcp_test_server
             }
         }
 
-        // MACアドレスから取得対象のレコードを返却
+        // MACアドレスに対応するレコードがあるか？
+        public bool Matches(PhysicalAddress chaddr)
+        {
+            DhcpLeaseItem searchitem = SearchItem(chaddr);
+            return (searchitem != null);
+        }
+        // MACアドレスに対応するレコードがあって自動応答か？
+        public bool AutoReply(PhysicalAddress chaddr)
+        {
+            DhcpLeaseItem searchitem = SearchItem(chaddr);
+            // 見つかれば、自動応答かを返却
+            if (searchitem != null)
+            {
+                return searchitem.autoreply_;
+            }
+            // 見つからないときは「自動応答ではない」とする
+            return false;
+        }
+        // MACアドレスから取得対象のレコードを返却。なければ新規に作成して返却。
         public DhcpLeaseItem GetItem(PhysicalAddress chaddr)
+        {
+            DhcpLeaseItem searchitem = SearchItem(chaddr);
+            // 見つかれば返却
+            if (searchitem != null)
+            {
+                return searchitem;
+            }
+            // なければ新規に作成
+            DhcpLeaseItem newitem = new DhcpLeaseItem(chaddr);
+            this.items_.Add(newitem);
+            return newitem;
+        }
+        // MACアドレスから取得対象のレコードを検索する
+        private DhcpLeaseItem SearchItem(PhysicalAddress chaddr)
         {
             foreach (DhcpLeaseItem item in this.items_)
             {
@@ -98,15 +130,15 @@ namespace dhcp_test_server
                     return item;
                 }
             }
-            DhcpLeaseItem newitem = new DhcpLeaseItem(chaddr);
-            this.items_.Add(newitem);
-            return newitem;
+            return null;
         }
-
     }
 
     public class DhcpLeaseItem
     {
+        // 以下全て、試験用に任意にユーザが編集可能とするために private set; ではなく public set; としている
+        public bool autoreply_ { get; set; }
+
         // ユーザが直接編集するのは大変なので、wrapする
         private PhysicalAddress chaddr_ { get; set; }
         private const char MAC_SEPARATOR = '-';
@@ -156,6 +188,7 @@ namespace dhcp_test_server
             this.domain_name_server_ = DhcpLeases.DOMAIN_NAME_SERVER_;
 
             // 決め打ち
+            this.autoreply_ = true;
             this.renewal_time_ = this.lease_time_ / 2; // 50%
             this.rebinding_time_ = this.lease_time_ * 875 / 1000; // 87.5%
         }

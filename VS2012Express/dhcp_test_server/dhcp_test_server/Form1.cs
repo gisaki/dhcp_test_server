@@ -182,9 +182,9 @@ namespace dhcp_test_server
 
             // 処理対象？
             DhcpPacket rcv_packet = new DhcpPacket(rcvBytes);
-            Boolean reply = true;
-            Boolean match = true;
-            if (match)
+            Boolean reply = this.dhcplease_.AutoReply(rcv_packet.chaddr_);
+            Boolean match = this.dhcplease_.Matches(rcv_packet.chaddr_);
+
             {
                 // 受信情報を控えておく（送信データに載せるため）
                 // 受信データ
@@ -204,8 +204,15 @@ namespace dhcp_test_server
                 new Action<string>(ShowReceivedString), displayMsg);
 
             // 応答する
-            if (reply)
+            if (match && (!reply))
             {
+                // 当該MACアドレスが登録されていて、
+                // かつ、「自動応答」が明示的にOFFされている場合は応答しない
+            }
+            else
+            {
+                // それ以外は応答する
+
                 // 送信先のIPアドレスは remoteEP.Address ではなく、ブロードキャスト
                 SendUDP(sourceIPAddress_, sourcePort_, IPAddress.Broadcast, remoteEP.Port);
             }
